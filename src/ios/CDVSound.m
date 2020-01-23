@@ -337,10 +337,8 @@ BOOL keepAvAudioSessionAlwaysActive = NO;
 - (void)startPlayingAudio:(CDVInvokedUrlCommand*)command
 {
     [self.commandDelegate runInBackground:^{
+    CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
 
-    NSString* callbackId = command.callbackId;
-
-#pragma unused(callbackId)
     NSString* mediaId = [command argumentAtIndex:0];
     NSString* resourcePath = [command argumentAtIndex:1];
     NSDictionary* options = [command argumentAtIndex:2 withDefault:nil];
@@ -439,9 +437,11 @@ BOOL keepAvAudioSessionAlwaysActive = NO;
             // error creating the session or player
             [self onStatus:MEDIA_ERROR mediaId:mediaId
               param:[self createMediaErrorWithCode:MEDIA_ERR_NONE_SUPPORTED message:nil]];
+            result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR];
         }
     }
     // else audioFile was nil - error already returned from audioFile for resource
+    [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
     return;
 
     }];
@@ -552,6 +552,7 @@ BOOL keepAvAudioSessionAlwaysActive = NO;
     // args:
     // 0 = Media id
     // 1 = seek to location in milliseconds
+    CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
 
     NSString* mediaId = [command argumentAtIndex:0];
 
@@ -592,8 +593,10 @@ BOOL keepAvAudioSessionAlwaysActive = NO;
             NSString* errMsg = @"AVPlayerItem cannot service a seek request with a completion handler until its status is AVPlayerItemStatusReadyToPlay.";
             [self onStatus:MEDIA_ERROR mediaId:mediaId param:
               [self createAbortError:errMsg]];
+            result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR];
         }
     }
+    [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
 }
 
 
@@ -835,7 +838,7 @@ BOOL keepAvAudioSessionAlwaysActive = NO;
 {
     /* https://issues.apache.org/jira/browse/CB-11513 */
     NSMutableArray* keysToRemove = [[NSMutableArray alloc] init];
-    
+
     for(id key in [self soundCache]) {
         CDVAudioFile* audioFile = [[self soundCache] objectForKey:key];
         if (audioFile != nil) {
@@ -847,9 +850,9 @@ BOOL keepAvAudioSessionAlwaysActive = NO;
             }
         }
     }
-    
+
     [[self soundCache] removeObjectsForKeys:keysToRemove];
-    
+
     // [[self soundCache] removeAllObjects];
     // [self setSoundCache:nil];
     [self setAvSession:nil];
