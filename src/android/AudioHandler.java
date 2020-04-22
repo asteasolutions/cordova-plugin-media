@@ -29,9 +29,7 @@ import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.media.AudioManager.OnAudioFocusChangeListener;
 import android.net.Uri;
-import android.os.Build;
 
-import java.security.Permission;
 import java.util.ArrayList;
 
 import org.apache.cordova.LOG;
@@ -40,8 +38,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.HashMap;
-
+import java.util.concurrent.ConcurrentHashMap;
 /**
  * This class called by CordovaActivity to play and record audio.
  * The file can be local or over a network using http.
@@ -56,7 +53,7 @@ import java.util.HashMap;
 public class AudioHandler extends CordovaPlugin {
 
     public static String TAG = "AudioHandler";
-    HashMap<String, AudioPlayer> players;  // Audio player object
+    ConcurrentHashMap<String, AudioPlayer> players;  // Audio player object
     ArrayList<AudioPlayer> pausedForPhone; // Audio players that were paused when phone call came in
     ArrayList<AudioPlayer> pausedForFocus; // Audio players that were paused when focus was lost
     private int origVolumeStream = -1;
@@ -76,7 +73,7 @@ public class AudioHandler extends CordovaPlugin {
      * Constructor.
      */
     public AudioHandler() {
-        this.players = new HashMap<String, AudioPlayer>();
+        this.players = new ConcurrentHashMap<String, AudioPlayer>();
         this.pausedForPhone = new ArrayList<AudioPlayer>();
         this.pausedForFocus = new ArrayList<AudioPlayer>();
     }
